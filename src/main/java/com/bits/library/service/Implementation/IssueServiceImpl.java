@@ -4,13 +4,18 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.bits.library.controller.LibraryController;
 import com.bits.library.model.IssueBookDTO;
 import com.bits.library.service.IssueService;
 
 @Service
 public class IssueServiceImpl implements IssueService {
+	
+	private static final Logger LOGGER = LogManager.getLogger(IssueServiceImpl.class);
 
 	@Override
 	public void issueBook(IssueBookDTO issueBook) {
@@ -20,12 +25,14 @@ public class IssueServiceImpl implements IssueService {
 
 	@Override
 	public IssueBookDTO fetchIssueBookDetails(Integer issueId) {
+		LOGGER.info("fetchIssueBookDetails in Service for issueId: " + issueId);
 		return new IssueBookDTO(10, "asd123", "TAR001", new Date(), Integer.valueOf(10));
 	}
 
 	@Override
 	public List<Integer> searchIssuedBookWithStudentId(Integer studentId) {
-		// TODO Auto-generated method stub
+		
+		LOGGER.info("searchIssueBookId in Service for studentId: " + studentId);
 		return (List<Integer>) Arrays.asList(123, 111, 222, 333);
 	}
 
