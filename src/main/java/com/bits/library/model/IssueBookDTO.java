@@ -13,21 +13,9 @@ public class IssueBookDTO {
 	
 	Integer issueId;
 	String bookISBN;
-	String issuedTo;
-	
-	Date issuedOn;
+	String issuedTo;	
+	Date issuedOn;	
 	Integer issuedForDays;
-	
-	
-	public IssueBookDTO(Integer issueId, String bookISBN, String issuedTo, Date issuedOn, Integer issuedForDays) {
-		super();
-		this.issueId  = issueId;
-		this.bookISBN = bookISBN;
-		this.issuedTo = issuedTo;
-		this.issuedOn = issuedOn;
-		this.issuedForDays = issuedForDays;
-	}
-
 
 	@Override
 	public String toString() {
