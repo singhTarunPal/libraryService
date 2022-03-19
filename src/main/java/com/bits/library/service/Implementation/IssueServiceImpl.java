@@ -1,8 +1,9 @@
 package com.bits.library.service.Implementation;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -10,8 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.bits.library.dao.ws.InventoryServiceStub;
+import com.bits.library.entity.BookIssueDetails;
 import com.bits.library.model.BookInventory;
 import com.bits.library.model.IssueBookDTO;
+import com.bits.library.repository.BookIssueRepository;
 import com.bits.library.service.IssueService;
 import com.bits.library.util.MQUtility;
 
@@ -19,76 +22,174 @@ import com.bits.library.util.MQUtility;
 public class IssueServiceImpl implements IssueService {
 
 	private static final Logger LOGGER = LogManager.getLogger(IssueServiceImpl.class);
-	
-	@Autowired(required=true)
+
+	@Autowired(required = true)
 	InventoryServiceStub inventoryServiceStub;
 
+	@Autowired
+	BookIssueRepository bookIssueRepository;
+
 	@Override
-	public Boolean issueBook(IssueBookDTO issueBook) {
-		System.out.println(issueBook);
+	public String issueBook(IssueBookDTO issueBook) {
 		
-		Boolean transactionSuccess=false;
-		try {
-			List<BookInventory> bookInventory = inventoryServiceStub.getInventoryForABook(issueBook.getBookISBN());
-			LOGGER.info("bookInventory: " + bookInventory);
-			
-			if(bookInventory!=null && bookInventory.get(0).getCount()>0) {
-				try {
-					//Reduce the inventory by 1
-					inventoryServiceStub.saveInventoryForABook(
-							new BookInventory(issueBook.getBookISBN(), bookInventory.get(0).getCount()-1 ));
-					transactionSuccess=true;
-				}catch(Exception e) {
-					LOGGER.info("Exception occured while calling Inventory Service - POST Service " + e);
-					transactionSuccess=false;
-				}
-			}
-			
-		}
-		catch(Exception e) {
-			LOGGER.info("Exception occured while calling Inventory Service - GET" + e);
-			transactionSuccess=false;
-		}
+		Boolean transactionSuccess = false;
 		
-		if(transactionSuccess) {
+		  try { 
+			  List<BookInventory> bookInventory =
+					  inventoryServiceStub.getInventoryForABook(issueBook.getBookISBN());
+			  LOGGER.info("bookInventory: " + bookInventory);
+		  
+			  if(bookInventory!=null && bookInventory.get(0).getCount()>0) 
+			  { 
+				  try { 
+					  //Reduce the inventory by 1 
+					  inventoryServiceStub.saveInventoryForABook( new
+							  BookInventory(issueBook.getBookISBN(), bookInventory.get(0).getCount()-1 ));
+					  transactionSuccess=true; 
+					  }
+				  catch(Exception e) { 
+					  LOGGER.
+					  	info("Exception occured while calling Inventory Service - POST Service " + e); 
+					  transactionSuccess=false; 
+					  } 
+				  }
+		 
+		  }catch(Exception e) {
+			  LOGGER.info("Exception occured while calling Inventory Service - GET" + e);
+			  transactionSuccess=false; 
+			 }
+		  
+		if (transactionSuccess) {
 			try {
-				notifyUser("Book Issued: *" + issueBook.getBookISBN() + "* on *" + issueBook.getIssuedOn() + "* for (days) *"
-					+ issueBook.getIssuedForDays() + " to *" + issueBook.getIssuedTo() + "*");
-				transactionSuccess=true;
-			}catch(Exception e) {
-				LOGGER.info("Exception occured while calling Notification Service " + e);
-				transactionSuccess=false;
-			}		
-		}else {
-			LOGGER.info("Issue Book transaction has failed");
-		}
-		
-		if(transactionSuccess) {
-			try {
-				//save in library DB
-				transactionSuccess=true;
-			}catch(Exception e) {
+				bookIssueRepository
+						.save(new BookIssueDetails(null, issueBook.getBookISBN(), issueBook.getIssuedTo(), new Date(), // Issued
+																														// On
+								issueBook.getIssuedForDays(), "N", null));
+
+				transactionSuccess = true;
+			} catch (Exception e) {
 				LOGGER.info("Exception occured while Saving in Library DB " + e);
-				transactionSuccess=false;
-			}		
-		}else {
+				transactionSuccess = false;
+			}
+		} else {
 			LOGGER.info("Issue Book transaction has failed");
 		}
 		
-		return transactionSuccess;
+		if(transactionSuccess) {
+			 try { 
+				 notifyUser("Book Issued: *" +
+						 issueBook.getBookISBN() + "* on *" + issueBook.getIssuedOn() +
+						 "* for (days) *" + issueBook.getIssuedForDays() + " to *" +
+						 issueBook.getIssuedTo() + "*"); transactionSuccess=true; 
+			 }catch(Exception e){
+				  LOGGER.info("Exception occured while calling Notification Service " + e);
+				  transactionSuccess=false; 
+				  } 
+		}else {
+			  LOGGER.info("Issue Book transaction or Save in Library service has failed"); 
+			  }
+
+		if (transactionSuccess)
+			return "Transaction Successful";
+		else
+			return "Transaction failed";
 	}
 
 	@Override
 	public IssueBookDTO fetchIssueBookDetails(Integer issueId) {
 		LOGGER.info("fetchIssueBookDetails in Service for issueId: " + issueId);
-		return new IssueBookDTO(10, "asd123", "TAR001", new Date(), Integer.valueOf(10));
+		IssueBookDTO issueBookDTO = null;
+
+		Optional<BookIssueDetails> bookIssueDetailsOptional = bookIssueRepository.findById(issueId);
+		if (bookIssueDetailsOptional.isPresent()) {
+			issueBookDTO = new IssueBookDTO(bookIssueDetailsOptional.get().getId(),
+					bookIssueDetailsOptional.get().getBookId(), bookIssueDetailsOptional.get().getIssuedTo(),
+					bookIssueDetailsOptional.get().getIssuedOn(), bookIssueDetailsOptional.get().getIssuedForDays(),
+					bookIssueDetailsOptional.get().getReturnedFlag(), bookIssueDetailsOptional.get().getReturnedOn());
+		}
+		return issueBookDTO;
 	}
 
 	@Override
-	public List<Integer> searchIssuedBookWithStudentId(Integer studentId) {
+	public List<IssueBookDTO> searchIssuedBookWithStudentId(String studentId) {
 
 		LOGGER.info("searchIssueBookId in Service for studentId: " + studentId);
-		return (List<Integer>) Arrays.asList(123, 111, 222, 333);
+		List<IssueBookDTO> issueBookDTOList = new ArrayList<IssueBookDTO>();
+		List<BookIssueDetails> bookIssueDetailsList = bookIssueRepository.findByStudentId(studentId);
+		bookIssueDetailsList.stream().forEach(bookIssueDetailsOptional -> {
+
+			issueBookDTOList.add(new IssueBookDTO(bookIssueDetailsOptional.getId(),
+					bookIssueDetailsOptional.getBookId(), bookIssueDetailsOptional.getIssuedTo(),
+					bookIssueDetailsOptional.getIssuedOn(), bookIssueDetailsOptional.getIssuedForDays(),
+					bookIssueDetailsOptional.getReturnedFlag(), bookIssueDetailsOptional.getReturnedOn()));
+		});
+		return issueBookDTOList;
+	}
+
+	@Override
+	public String returnBook(IssueBookDTO issueBook) {
+		Boolean transactionSuccess = false;
+
+		
+		  try { 
+			  List<BookInventory> bookInventory =
+					  inventoryServiceStub.getInventoryForABook(issueBook.getBookISBN());
+			  LOGGER.info("bookInventory: " + bookInventory);
+		  
+			  if(bookInventory!=null && bookInventory.get(0).getCount()>0) { try {
+				  //Increase the inventory by 1 
+				  inventoryServiceStub.saveInventoryForABook( new
+						  BookInventory(issueBook.getBookISBN(), bookInventory.get(0).getCount()+1 ));
+				  transactionSuccess=true; 
+			  }catch(Exception e) { 
+				  LOGGER.
+					  info("Exception occured while calling Inventory Service - POST Service " +
+							  e); 
+				  transactionSuccess=false; 
+				  } 
+			  }
+		  
+		  } catch(Exception e) {
+		  LOGGER.info("Exception occured while calling Inventory Service - GET" + e);
+		  transactionSuccess=false; }
+		 
+		if (transactionSuccess) {
+			try {
+				Optional<BookIssueDetails> bookIssueDetailsOptional = bookIssueRepository
+						.findById(issueBook.getIssueId());
+				if (bookIssueDetailsOptional.isPresent()) {
+					bookIssueRepository.save(new BookIssueDetails(bookIssueDetailsOptional.get().getId(),
+							bookIssueDetailsOptional.get().getBookId(), bookIssueDetailsOptional.get().getIssuedTo(),
+							bookIssueDetailsOptional.get().getIssuedOn(),
+							bookIssueDetailsOptional.get().getIssuedForDays(), "Y", new Date()));
+				}
+				transactionSuccess = true;
+			} catch (Exception e) {
+				LOGGER.info("Exception occured while Saving in Library DB " + e);
+				transactionSuccess = false;
+			}
+		} else {
+			LOGGER.info("Return Book transaction has failed");
+		}
+		
+		if(transactionSuccess) {
+			 try { 
+				 notifyUser("Book returned: *" +
+						 issueBook.getBookISBN() + "* on *" + new Date() +
+						  " by *" + issueBook.getIssuedTo() + "*"); 
+				 transactionSuccess=true; 
+			 }catch(Exception e){
+				  LOGGER.info("Exception occured while calling Notification Service " + e);
+				  transactionSuccess=false; 
+				  } 
+		}else {
+			  LOGGER.info("Issue Book transaction or Save in Library service has failed"); 
+			  }
+
+		if (transactionSuccess)
+			return "Transaction Successful";
+		else
+			return "Transaction failed";
 	}
 
 	private void notifyUser(String message) {

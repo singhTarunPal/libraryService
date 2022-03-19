@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bits.library.model.IssueBookDTO;
+import com.bits.library.model.StatusDTO;
 import com.bits.library.service.IssueService;
 import com.google.gson.Gson;
 
@@ -29,10 +30,9 @@ public class LibraryController {
 	
 	@PostMapping("/issueBook")
 	public ResponseEntity<String> issueBook(@RequestBody IssueBookDTO issueBookDTO) {
-		issueService.issueBook(issueBookDTO);
-		
+				
 		return new ResponseEntity<String>(
-				new Gson().toJson("Success"),
+				new Gson().toJson(new StatusDTO(issueService.issueBook(issueBookDTO))),
 				HttpStatus.OK);
 	}
 	
@@ -44,19 +44,25 @@ public class LibraryController {
 		LOGGER.info("fetchIssueBookDetails for issueId: " + issueId);
 		return new ResponseEntity<String>(
 				new Gson().toJson(issueService.fetchIssueBookDetails(issueId)),
-				HttpStatus.OK);
-		
+				HttpStatus.OK);		
 	}
 	
 	/*
 	 * http://localhost:8080/library/searchIssuedBook?studentId=10
-	 */
-	
+	 */	
 	@GetMapping("/searchIssuedBook")
-	public ResponseEntity<List<?>> searchIssueBookId(@RequestParam Integer studentId) {
+	public ResponseEntity<List<?>> searchIssueBookId(@RequestParam String studentId) {
 		LOGGER.info("searchIssueBookId for studentId: " + studentId);
 		return new ResponseEntity<List<?>>(
 				issueService.searchIssuedBookWithStudentId(studentId),
+				HttpStatus.OK);
+	}
+	
+	@PostMapping("/returnBook")
+	public ResponseEntity<String> returnBook(@RequestBody IssueBookDTO issueBookDTO) {
+		LOGGER.info("returnBook with issueBookDTO: " + issueBookDTO);		
+		return new ResponseEntity<String>(
+				new Gson().toJson(new StatusDTO(issueService.returnBook(issueBookDTO))),
 				HttpStatus.OK);
 	}
 }

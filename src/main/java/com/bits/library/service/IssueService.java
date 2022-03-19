@@ -5,8 +5,9 @@ import java.util.List;
 import com.bits.library.model.IssueBookDTO;
 
 public interface IssueService {
-	Boolean issueBook(IssueBookDTO issueBook);
+	String issueBook(IssueBookDTO issueBook);
+	String returnBook(IssueBookDTO issueBook);
 	IssueBookDTO fetchIssueBookDetails(Integer issueId);
-	List<Integer> searchIssuedBookWithStudentId(Integer studentId);
+	List<IssueBookDTO> searchIssuedBookWithStudentId(String studentId);
 	
 }

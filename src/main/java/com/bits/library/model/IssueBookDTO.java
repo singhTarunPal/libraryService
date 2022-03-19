@@ -11,17 +11,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class IssueBookDTO {
 	
-	Integer issueId;
-	String bookISBN;
-	String issuedTo;	
-	Date issuedOn;	
-	Integer issuedForDays;
-
+	private Integer issueId;
+	private String bookISBN;
+	private String issuedTo;	
+	private Date issuedOn;	
+	private Integer issuedForDays;
+	private String returnedFlag;
+	private Date returnedOn;
+	
 	@Override
 	public String toString() {
 		return "IssueBookDTO [issueId=" + issueId + ", bookISBN=" + bookISBN + ", issuedTo=" + issuedTo + ", issuedOn="
-				+ issuedOn + ", issuedForDays=" + issuedForDays + "]";
+				+ issuedOn + ", issuedForDays=" + issuedForDays + ", returnedFlag=" + returnedFlag + ", returnedOn="
+				+ returnedOn + "]";
 	}
-	
 	
 }
