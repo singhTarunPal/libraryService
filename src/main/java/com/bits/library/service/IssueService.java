@@ -5,7 +5,7 @@ import java.util.List;
 import com.bits.library.model.IssueBookDTO;
 
 public interface IssueService {
-	void issueBook(IssueBookDTO issueBook);
+	Boolean issueBook(IssueBookDTO issueBook);
 	IssueBookDTO fetchIssueBookDetails(Integer issueId);
 	List<Integer> searchIssuedBookWithStudentId(Integer studentId);
 	
