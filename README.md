@@ -15,20 +15,16 @@ Its a Spring Boot webservice based on Java
 
 *API*
  - GET
- - -http://localhost:8080/library/searchIssuedBook?studentId=<studentID>  =  Get the Books issued to a student by passing student Id
- - -http://localhost:8080/library/issueBook?issueId=<ussueId>  =  Get the Issue (book) details, issued to a student by passing issue Id
+  http://localhost:8080/library/searchIssuedBook?studentId=< studentID >  
+    -Get the Books issued to a student by passing student Id
+- GET
+  http://localhost:8080/library/issueBook?issueId=< issueId >  
+    -Get the Issue (book) details, issued to a student by passing issue Id
  
  - POST
- - - http://localhost:8080/library/issueBook    =   Issue a Book
- ---{
- ---   "bookISBN": "CSE401",
- ---   "issuedTo": "2020MT93553",
- ---   "issuedForDays": 15
----}
-  - - http://localhost:8080/library/returnBook    =   Return a Book
- ---{
- ---   "issueId": 7,
- ---   "bookISBN": "CSE301",
- ---   "issuedTo": "2020MT93553",
- ---   "issuedForDays": 10
----}
+    - http://localhost:8080/library/issueBook    
+      - Issue a Book
+      - {   "bookISBN": "CSE401",   "issuedTo": "2020MT93553",   "issuedForDays": 15  }
+     - http://localhost:8080/library/returnBook    
+       - Return a Book
+       - {    "issueId": 7,    "bookISBN": "CSE301",    "issuedTo": "2020MT93553",    "issuedForDays": 10 }
