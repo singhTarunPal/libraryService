@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bits.library.model.IssueBookDTO;
+import com.bits.library.model.ReturnBookDTO;
 import com.bits.library.model.StatusDTO;
 import com.bits.library.service.IssueService;
 import com.google.gson.Gson;
 
 @RestController
-@RequestMapping("/library")
+@RequestMapping("/api/library/v1")
 public class LibraryController {
 	
 	private static final Logger LOGGER = LogManager.getLogger(LibraryController.class);
@@ -59,10 +60,10 @@ public class LibraryController {
 	}
 	
 	@PostMapping("/returnBook")
-	public ResponseEntity<String> returnBook(@RequestBody IssueBookDTO issueBookDTO) {
-		LOGGER.info("returnBook with issueBookDTO: " + issueBookDTO);		
+	public ResponseEntity<String> returnBook(@RequestBody ReturnBookDTO returnBookDTO) {
+		LOGGER.info("returnBook with issueBookDTO: " + returnBookDTO);		
 		return new ResponseEntity<String>(
-				new Gson().toJson(new StatusDTO(issueService.returnBook(issueBookDTO))),
+				new Gson().toJson(new StatusDTO(issueService.returnBook(returnBookDTO))),
 				HttpStatus.OK);
 	}
 }

@@ -23,7 +23,7 @@ import com.google.gson.reflect.TypeToken;
 @Service
 public class InventoryServiceStubImpl implements InventoryServiceStub {
 	
-	final String uri = "http://127.0.0.1:8000/bookInventory/";
+	final String uri = "http://127.0.0.1:8000/api/bookInventory/";
 	private static final Logger LOGGER = LogManager.getLogger(IssueServiceImpl.class);
 	
 	public List<BookInventory> getInventoryForABook(String bookId) {	    
@@ -47,11 +47,12 @@ public class InventoryServiceStubImpl implements InventoryServiceStub {
 			      new HttpEntity<String>(new Gson().toJson(bookInventory), headers);
 		
 	    RestTemplate restTemplate = new RestTemplate();
+	    
 	    ResponseEntity<String> response = restTemplate.postForEntity(uri, request, String.class);
 
-	    System.out.println("WS-response: " + response);
+	    LOGGER.info("WS-response: " + response);
 	    //String resultJSON =  result.substring(1, (result.length()-1)) ;
 	    
-	    return null;
+	    return new Gson().fromJson(response.getBody(), BookInventory.class) ;
 	}
 }

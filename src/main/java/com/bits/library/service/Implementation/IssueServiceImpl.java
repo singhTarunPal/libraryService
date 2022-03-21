@@ -14,6 +14,7 @@ import com.bits.library.dao.ws.InventoryServiceStub;
 import com.bits.library.entity.BookIssueDetails;
 import com.bits.library.model.BookInventory;
 import com.bits.library.model.IssueBookDTO;
+import com.bits.library.model.ReturnBookDTO;
 import com.bits.library.repository.BookIssueRepository;
 import com.bits.library.service.IssueService;
 import com.bits.library.util.MQUtility;
@@ -31,7 +32,7 @@ public class IssueServiceImpl implements IssueService {
 
 	@Override
 	public String issueBook(IssueBookDTO issueBook) {
-		
+		LOGGER.info("Returning book: " + issueBook);
 		Boolean transactionSuccess = false;
 		
 		  try { 
@@ -43,8 +44,9 @@ public class IssueServiceImpl implements IssueService {
 			  { 
 				  try { 
 					  //Reduce the inventory by 1 
-					  inventoryServiceStub.saveInventoryForABook( new
+					  BookInventory bookInventoryResp = inventoryServiceStub.saveInventoryForABook( new
 							  BookInventory(issueBook.getBookISBN(), bookInventory.get(0).getCount()-1 ));
+					  LOGGER.info("bookInventoryResp : " + bookInventoryResp);
 					  transactionSuccess=true; 
 					  }
 				  catch(Exception e) { 
@@ -80,10 +82,9 @@ public class IssueServiceImpl implements IssueService {
 				 notifyUser("Book Issued: *" +
 						 issueBook.getBookISBN() + "* on *" + issueBook.getIssuedOn() +
 						 "* for (days) *" + issueBook.getIssuedForDays() + " to *" +
-						 issueBook.getIssuedTo() + "*"); transactionSuccess=true; 
+						 issueBook.getIssuedTo() + "*"); 
 			 }catch(Exception e){
 				  LOGGER.info("Exception occured while calling Notification Service " + e);
-				  transactionSuccess=false; 
 				  } 
 		}else {
 			  LOGGER.info("Issue Book transaction or Save in Library service has failed"); 
@@ -127,19 +128,20 @@ public class IssueServiceImpl implements IssueService {
 	}
 
 	@Override
-	public String returnBook(IssueBookDTO issueBook) {
+	public String returnBook(ReturnBookDTO returnBook) {
 		Boolean transactionSuccess = false;
-
+		LOGGER.info("Returning book: " + returnBook);
 		
 		  try { 
 			  List<BookInventory> bookInventory =
-					  inventoryServiceStub.getInventoryForABook(issueBook.getBookISBN());
+					  inventoryServiceStub.getInventoryForABook(returnBook.getBookISBN());
 			  LOGGER.info("bookInventory: " + bookInventory);
 		  
 			  if(bookInventory!=null && bookInventory.get(0).getCount()>0) { try {
 				  //Increase the inventory by 1 
-				  inventoryServiceStub.saveInventoryForABook( new
-						  BookInventory(issueBook.getBookISBN(), bookInventory.get(0).getCount()+1 ));
+				  BookInventory bookInventoryResp = inventoryServiceStub.saveInventoryForABook( new
+						  BookInventory(returnBook.getBookISBN(), bookInventory.get(0).getCount()+1 ));
+				  LOGGER.info("bookInventoryResp : " + bookInventoryResp);
 				  transactionSuccess=true; 
 			  }catch(Exception e) { 
 				  LOGGER.
@@ -156,7 +158,7 @@ public class IssueServiceImpl implements IssueService {
 		if (transactionSuccess) {
 			try {
 				Optional<BookIssueDetails> bookIssueDetailsOptional = bookIssueRepository
-						.findById(issueBook.getIssueId());
+						.findById(returnBook.getIssueId());
 				if (bookIssueDetailsOptional.isPresent()) {
 					bookIssueRepository.save(new BookIssueDetails(bookIssueDetailsOptional.get().getId(),
 							bookIssueDetailsOptional.get().getBookId(), bookIssueDetailsOptional.get().getIssuedTo(),
@@ -175,12 +177,11 @@ public class IssueServiceImpl implements IssueService {
 		if(transactionSuccess) {
 			 try { 
 				 notifyUser("Book returned: *" +
-						 issueBook.getBookISBN() + "* on *" + new Date() +
-						  " by *" + issueBook.getIssuedTo() + "*"); 
-				 transactionSuccess=true; 
+						 returnBook.getBookISBN() + "* on *" + new Date() +
+						  " by *" + returnBook.getIssuedTo() + "*"); 
+				 
 			 }catch(Exception e){
 				  LOGGER.info("Exception occured while calling Notification Service " + e);
-				  transactionSuccess=false; 
 				  } 
 		}else {
 			  LOGGER.info("Issue Book transaction or Save in Library service has failed"); 
