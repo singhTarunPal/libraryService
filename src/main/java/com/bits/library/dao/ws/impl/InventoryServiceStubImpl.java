@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -23,7 +24,9 @@ import com.google.gson.reflect.TypeToken;
 @Service
 public class InventoryServiceStubImpl implements InventoryServiceStub {
 	
-	final String uri = "http://127.0.0.1:8000/api/bookInventory/";
+	@Value("${service.bookInventory.uri}")
+	private String uri;
+		
 	private static final Logger LOGGER = LogManager.getLogger(IssueServiceImpl.class);
 	
 	public List<BookInventory> getInventoryForABook(String bookId) {	    

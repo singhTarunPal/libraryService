@@ -138,9 +138,9 @@ public class IssueServiceImpl implements IssueService {
 			  LOGGER.info("bookInventory: " + bookInventory);
 		  
 			  if(bookInventory!=null && bookInventory.get(0).getCount()>0) { try {
-				  //Increase the inventory by 1 
+				  //Decrease the inventory by 1 
 				  BookInventory bookInventoryResp = inventoryServiceStub.saveInventoryForABook( new
-						  BookInventory(returnBook.getBookISBN(), bookInventory.get(0).getCount()+1 ));
+						  BookInventory(returnBook.getBookISBN(), bookInventory.get(0).getCount()-1 ));
 				  LOGGER.info("bookInventoryResp : " + bookInventoryResp);
 				  transactionSuccess=true; 
 			  }catch(Exception e) { 

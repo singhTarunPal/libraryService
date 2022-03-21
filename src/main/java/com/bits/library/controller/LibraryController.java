@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ import com.bits.library.service.IssueService;
 import com.google.gson.Gson;
 
 @RestController
-@RequestMapping("/api/library/v1")
+@CrossOrigin()
 public class LibraryController {
 	
 	private static final Logger LOGGER = LogManager.getLogger(LibraryController.class);
@@ -29,7 +30,7 @@ public class LibraryController {
 	@Autowired
 	IssueService issueService;
 	
-	@PostMapping("/issueBook")
+	@PostMapping("/api/library/v1/issueBook")
 	public ResponseEntity<String> issueBook(@RequestBody IssueBookDTO issueBookDTO) {
 				
 		return new ResponseEntity<String>(
@@ -40,7 +41,7 @@ public class LibraryController {
 	/*
 	 * http://localhost:8080/library/issueBook?issueId=10
 	 */
-	@GetMapping("/issueBook")
+	@GetMapping("/api/library/v1/issueBook")
 	public ResponseEntity<String> fetchIssueBookDetails(@RequestParam Integer issueId) {
 		LOGGER.info("fetchIssueBookDetails for issueId: " + issueId);
 		return new ResponseEntity<String>(
@@ -51,7 +52,7 @@ public class LibraryController {
 	/*
 	 * http://localhost:8080/library/searchIssuedBook?studentId=10
 	 */	
-	@GetMapping("/searchIssuedBook")
+	@GetMapping("/api/library/v1/searchIssuedBook")
 	public ResponseEntity<List<?>> searchIssueBookId(@RequestParam String studentId) {
 		LOGGER.info("searchIssueBookId for studentId: " + studentId);
 		return new ResponseEntity<List<?>>(
@@ -59,7 +60,7 @@ public class LibraryController {
 				HttpStatus.OK);
 	}
 	
-	@PostMapping("/returnBook")
+	@PostMapping("/api/library/v1/returnBook")
 	public ResponseEntity<String> returnBook(@RequestBody ReturnBookDTO returnBookDTO) {
 		LOGGER.info("returnBook with issueBookDTO: " + returnBookDTO);		
 		return new ResponseEntity<String>(

@@ -9,6 +9,5 @@ public interface IssueService {
 	String issueBook(IssueBookDTO issueBook);
 	IssueBookDTO fetchIssueBookDetails(Integer issueId);
 	List<IssueBookDTO> searchIssuedBookWithStudentId(String studentId);
-	String returnBook(ReturnBookDTO issueBook);
-	
+	String returnBook(ReturnBookDTO issueBook);	
 }
