@@ -18,8 +18,11 @@ import com.bits.library.model.JwtResponse;
 import com.bits.library.service.Implementation.JwtUserDetailsService;
 import com.bits.library.util.JwtTokenUtil;
 
+import lombok.extern.slf4j.Slf4j;
+
 @RestController
 @CrossOrigin
+@Slf4j
 public class JwtAuthenticationController {
 
 	@Autowired
@@ -31,21 +34,22 @@ public class JwtAuthenticationController {
 	@Autowired
 	private JwtUserDetailsService userDetailsService;
 
-	@RequestMapping(value = "/authenticate", method = RequestMethod.POST)
+	@RequestMapping(value = "/api/library/authenticate", method = RequestMethod.POST)
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
-
+		log.info("in createAuthenticationToken ");
 		authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
-
+		log.info("authenticate passed");
 		final UserDetails userDetails = userDetailsService
 				.loadUserByUsername(authenticationRequest.getUsername());
-
+		log.info("userDetails: " + userDetails);
 		final String token = jwtTokenUtil.generateToken(userDetails);
-
+		log.info("token: " + token);
 		return ResponseEntity.ok(new JwtResponse(token));
 	}
 
 	private void authenticate(String username, String password) throws Exception {
 		try {
+			log.info("in authenticate ");
 			authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 		} catch (DisabledException e) {
 			throw new Exception("USER_DISABLED", e);
