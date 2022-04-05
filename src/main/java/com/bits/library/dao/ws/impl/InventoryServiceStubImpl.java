@@ -1,6 +1,5 @@
 package com.bits.library.dao.ws.impl;
 
-
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -23,39 +22,46 @@ import com.google.gson.reflect.TypeToken;
 
 @Service
 public class InventoryServiceStubImpl implements InventoryServiceStub {
-	
+
 	@Value("${service.bookInventory.uri}")
 	private String uri;
-		
+
 	private static final Logger LOGGER = LogManager.getLogger(IssueServiceImpl.class);
-	
-	public List<BookInventory> getInventoryForABook(String bookId) {	    
 
-		String getURL = Strings.concat(uri, bookId);
-	    RestTemplate restTemplate = new RestTemplate();
-	    String resultJSONArray = restTemplate.getForObject(getURL, String.class);
+	public List<BookInventory> getInventoryForABook(String bookId) {
+		try {
+			String getURL = Strings.concat(uri, bookId);
+			RestTemplate restTemplate = new RestTemplate();
+			String resultJSONArray = restTemplate.getForObject(getURL, String.class);
 
-	    LOGGER.info("Inventory WS-result: " + resultJSONArray);
-	    Type listType = new TypeToken<List<BookInventory>>() {}.getType();
-	    
-	    return new Gson().fromJson( resultJSONArray, listType);
+			LOGGER.info("Inventory WS-result: " + resultJSONArray);
+			Type listType = new TypeToken<List<BookInventory>>() {}.getType();
+
+			return new Gson().fromJson(resultJSONArray, listType);
+		} catch (Exception e) {
+			LOGGER.info("Inventory WS-failed");
+			return null;
+		}
 	}
-	
-	public BookInventory saveInventoryForABook(BookInventory bookInventory) {
-		
-		HttpHeaders headers = new HttpHeaders();
-	    headers.setContentType(MediaType.APPLICATION_JSON);
-		
-		HttpEntity<String> request = 
-			      new HttpEntity<String>(new Gson().toJson(bookInventory), headers);
-		
-	    RestTemplate restTemplate = new RestTemplate();
-	    
-	    ResponseEntity<String> response = restTemplate.postForEntity(uri, request, String.class);
 
-	    LOGGER.info("WS-response: " + response);
-	    //String resultJSON =  result.substring(1, (result.length()-1)) ;
-	    
-	    return new Gson().fromJson(response.getBody(), BookInventory.class) ;
+	public BookInventory saveInventoryForABook(BookInventory bookInventory) {
+		try {
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType(MediaType.APPLICATION_JSON);
+
+			HttpEntity<String> request = new HttpEntity<String>(new Gson().toJson(bookInventory), headers);
+
+			RestTemplate restTemplate = new RestTemplate();
+
+			ResponseEntity<String> response = restTemplate.postForEntity(uri, request, String.class);
+
+			LOGGER.info("WS-response: " + response);
+			// String resultJSON = result.substring(1, (result.length()-1)) ;
+
+			return new Gson().fromJson(response.getBody(), BookInventory.class);
+		} catch (Exception e) {
+			LOGGER.info("Inventory WS-failed");
+			return null;
+		}
 	}
 }

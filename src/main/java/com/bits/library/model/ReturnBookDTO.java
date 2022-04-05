@@ -13,18 +13,15 @@ public class ReturnBookDTO {
 	
 	//cannot be null
 	private Integer issueId;
-	private String bookISBN;
-	private String issuedTo;	
-	private Date issuedOn;	
-	private Integer issuedForDays;
-	private String returnedFlag;
-	private Date returnedOn;
+	private String bookId;
+	private String issuedToEmailId;	
+	private Date issuedOn;
+	
 	
 	@Override
 	public String toString() {
-		return "IssueBookDTO [issueId=" + issueId + ", bookISBN=" + bookISBN + ", issuedTo=" + issuedTo + ", issuedOn="
-				+ issuedOn + ", issuedForDays=" + issuedForDays + ", returnedFlag=" + returnedFlag + ", returnedOn="
-				+ returnedOn + "]";
+		return "IssueBookDTO [issueId=" + issueId + ", bookISBN=" + bookId + ", issuedTo=" + issuedToEmailId + ", issuedOn="
+				+ issuedOn  +" ]";
 	}
 	
 }

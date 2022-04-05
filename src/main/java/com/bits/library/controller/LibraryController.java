@@ -11,11 +11,11 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bits.library.model.IssueBookDTO;
+import com.bits.library.model.IssuedBookDetailsDTO;
 import com.bits.library.model.ReturnBookDTO;
 import com.bits.library.model.StatusDTO;
 import com.bits.library.service.IssueService;
@@ -53,9 +53,9 @@ public class LibraryController {
 	 * http://localhost:8080/library/searchIssuedBook?studentId=10
 	 */	
 	@GetMapping("/api/library/v1/searchIssuedBook")
-	public ResponseEntity<List<?>> searchIssueBookId(@RequestParam String studentId) {
+	public ResponseEntity<List<IssuedBookDetailsDTO>> searchIssueBookId(@RequestParam String studentId) {
 		LOGGER.info("searchIssueBookId for studentId: " + studentId);
-		return new ResponseEntity<List<?>>(
+		return new ResponseEntity<List<IssuedBookDetailsDTO>>(
 				issueService.searchIssuedBookWithStudentId(studentId),
 				HttpStatus.OK);
 	}

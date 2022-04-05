@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class IssueBookDTO {
+public class IssuedBookDetailsDTO {
 	
 	private Integer issueId;
 	private String bookId;
@@ -18,12 +18,14 @@ public class IssueBookDTO {
 	private Integer issuedForDays;
 	private String returnedFlag;
 	private Date returnedOn;
+	private String bookAuthor;
+	private String bookTitle;
 	
 	@Override
 	public String toString() {
-		return "IssueBookDTO [issueId=" + issueId + ", bookISBN=" + bookId + ", issuedTo=" + issuedToEmailId + ", issuedOn="
-				+ issuedOn + ", issuedForDays=" + issuedForDays + ", returnedFlag=" + returnedFlag + ", returnedOn="
-				+ returnedOn + "]";
-	}
-	
+		return "IssuedBookDetailsDTO [issueId=" + issueId + ", bookId=" + bookId + ", issuedToEmailId="
+				+ issuedToEmailId + ", issuedOn=" + issuedOn + ", issuedForDays=" + issuedForDays + ", returnedFlag="
+				+ returnedFlag + ", returnedOn=" + returnedOn + ", bookAuthor=" + bookAuthor + ", bookTitle="
+				+ bookTitle + "]";
+	}	
 }

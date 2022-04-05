@@ -45,5 +45,4 @@ public class BookIssueDetails {
 	private Date returnedOn;
 	
 	
-	
 }

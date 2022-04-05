@@ -7,13 +7,17 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.bits.library.dao.ws.BookServiceStub;
 import com.bits.library.dao.ws.InventoryServiceStub;
 import com.bits.library.entity.BookIssueDetails;
+import com.bits.library.model.Book;
 import com.bits.library.model.BookInventory;
 import com.bits.library.model.IssueBookDTO;
+import com.bits.library.model.IssuedBookDetailsDTO;
 import com.bits.library.model.ReturnBookDTO;
 import com.bits.library.repository.BookIssueRepository;
 import com.bits.library.service.IssueService;
@@ -26,18 +30,21 @@ public class IssueServiceImpl implements IssueService {
 
 	@Autowired(required = true)
 	InventoryServiceStub inventoryServiceStub;
+	
+	@Autowired(required = true)
+	BookServiceStub bookServiceStub;
 
 	@Autowired
 	BookIssueRepository bookIssueRepository;
 
 	@Override
 	public String issueBook(IssueBookDTO issueBook) {
-		LOGGER.info("Returning book: " + issueBook);
+		LOGGER.info("Issuing book: " + issueBook);
 		Boolean transactionSuccess = false;
 		
 		  try { 
 			  List<BookInventory> bookInventory =
-					  inventoryServiceStub.getInventoryForABook(issueBook.getBookISBN());
+					  inventoryServiceStub.getInventoryForABook(issueBook.getBookId());
 			  LOGGER.info("bookInventory: " + bookInventory);
 		  
 			  if(bookInventory!=null && bookInventory.get(0).getCount()>0) 
@@ -45,7 +52,7 @@ public class IssueServiceImpl implements IssueService {
 				  try { 
 					  //Reduce the inventory by 1 
 					  BookInventory bookInventoryResp = inventoryServiceStub.saveInventoryForABook( new
-							  BookInventory(issueBook.getBookISBN(), bookInventory.get(0).getCount()-1 ));
+							  BookInventory(issueBook.getBookId(), bookInventory.get(0).getCount()-1 ));
 					  LOGGER.info("bookInventoryResp : " + bookInventoryResp);
 					  transactionSuccess=true; 
 					  }
@@ -64,8 +71,8 @@ public class IssueServiceImpl implements IssueService {
 		if (transactionSuccess) {
 			try {
 				bookIssueRepository
-						.save(new BookIssueDetails(null, issueBook.getBookISBN(), issueBook.getIssuedTo(), new Date(), // Issued
-																														// On
+						.save(new BookIssueDetails(null, issueBook.getBookId(), issueBook.getIssuedToEmailId(), 
+								new Date(), // Issued On
 								issueBook.getIssuedForDays(), "N", null));
 
 				transactionSuccess = true;
@@ -79,10 +86,10 @@ public class IssueServiceImpl implements IssueService {
 		
 		if(transactionSuccess) {
 			 try { 
-				 notifyUser("Book Issued: *" +
-						 issueBook.getBookISBN() + "* on *" + issueBook.getIssuedOn() +
-						 "* for (days) *" + issueBook.getIssuedForDays() + " to *" +
-						 issueBook.getIssuedTo() + "*"); 
+				 notifyUser(issueBook.getIssuedToEmailId(),"Book Issued: BookID: '" +
+						 issueBook.getBookId() + "' on '" + new Date() +
+						 "' for (days) '" + issueBook.getIssuedForDays() + "' to '" +
+						 issueBook.getIssuedToEmailId() + "'"); 
 			 }catch(Exception e){
 				  LOGGER.info("Exception occured while calling Notification Service " + e);
 				  } 
@@ -97,32 +104,54 @@ public class IssueServiceImpl implements IssueService {
 	}
 
 	@Override
-	public IssueBookDTO fetchIssueBookDetails(Integer issueId) {
+	public IssuedBookDetailsDTO fetchIssueBookDetails(Integer issueId) {
 		LOGGER.info("fetchIssueBookDetails in Service for issueId: " + issueId);
-		IssueBookDTO issueBookDTO = null;
+		IssuedBookDetailsDTO issueBookDTO = null;
 
 		Optional<BookIssueDetails> bookIssueDetailsOptional = bookIssueRepository.findById(issueId);
 		if (bookIssueDetailsOptional.isPresent()) {
-			issueBookDTO = new IssueBookDTO(bookIssueDetailsOptional.get().getId(),
+			//get the book author and title
+			String bookAuthor = "Not-Available";
+			String bookTitle = "Not-Available";
+			List<Book> books = bookServiceStub.getBookById(bookIssueDetailsOptional.get().getBookId());
+			if(books !=null && books.size()>0) {
+				bookAuthor=books.get(0).getAuthor();
+				bookTitle=books.get(0).getTitle();
+			}
+			
+			issueBookDTO = new IssuedBookDetailsDTO(bookIssueDetailsOptional.get().getId(),
 					bookIssueDetailsOptional.get().getBookId(), bookIssueDetailsOptional.get().getIssuedTo(),
 					bookIssueDetailsOptional.get().getIssuedOn(), bookIssueDetailsOptional.get().getIssuedForDays(),
-					bookIssueDetailsOptional.get().getReturnedFlag(), bookIssueDetailsOptional.get().getReturnedOn());
+					bookIssueDetailsOptional.get().getReturnedFlag(), bookIssueDetailsOptional.get().getReturnedOn(),
+					bookAuthor, bookTitle);
 		}
+		LOGGER.info("issueBookDTO: " + issueBookDTO);
 		return issueBookDTO;
 	}
 
 	@Override
-	public List<IssueBookDTO> searchIssuedBookWithStudentId(String studentId) {
+	public List<IssuedBookDetailsDTO> searchIssuedBookWithStudentId(String studentId) {
 
 		LOGGER.info("searchIssueBookId in Service for studentId: " + studentId);
-		List<IssueBookDTO> issueBookDTOList = new ArrayList<IssueBookDTO>();
+		List<IssuedBookDetailsDTO> issueBookDTOList = new ArrayList<IssuedBookDetailsDTO>();
 		List<BookIssueDetails> bookIssueDetailsList = bookIssueRepository.findByStudentId(studentId);
+		
+		LOGGER.info("bookIssueDetailsList: " + bookIssueDetailsList);
 		bookIssueDetailsList.stream().forEach(bookIssueDetailsOptional -> {
-
-			issueBookDTOList.add(new IssueBookDTO(bookIssueDetailsOptional.getId(),
+			//get the book author and title
+			String bookAuthor = "Not-Available";
+			String bookTitle = "Not-Available";
+			List<Book> books = bookServiceStub.getBookById(bookIssueDetailsOptional.getBookId());
+			if(books !=null && books.size()>0) {
+				bookAuthor=books.get(0).getAuthor();
+				bookTitle=books.get(0).getTitle();
+			}
+			
+			issueBookDTOList.add(new IssuedBookDetailsDTO(bookIssueDetailsOptional.getId(),
 					bookIssueDetailsOptional.getBookId(), bookIssueDetailsOptional.getIssuedTo(),
 					bookIssueDetailsOptional.getIssuedOn(), bookIssueDetailsOptional.getIssuedForDays(),
-					bookIssueDetailsOptional.getReturnedFlag(), bookIssueDetailsOptional.getReturnedOn()));
+					bookIssueDetailsOptional.getReturnedFlag(), bookIssueDetailsOptional.getReturnedOn(),
+					bookAuthor, bookTitle));
 		});
 		return issueBookDTOList;
 	}
@@ -134,13 +163,13 @@ public class IssueServiceImpl implements IssueService {
 		
 		  try { 
 			  List<BookInventory> bookInventory =
-					  inventoryServiceStub.getInventoryForABook(returnBook.getBookISBN());
+					  inventoryServiceStub.getInventoryForABook(returnBook.getBookId());
 			  LOGGER.info("bookInventory: " + bookInventory);
 		  
 			  if(bookInventory!=null && bookInventory.get(0).getCount()>0) { try {
 				  //Decrease the inventory by 1 
 				  BookInventory bookInventoryResp = inventoryServiceStub.saveInventoryForABook( new
-						  BookInventory(returnBook.getBookISBN(), bookInventory.get(0).getCount()-1 ));
+						  BookInventory(returnBook.getBookId(), bookInventory.get(0).getCount()+1 ));
 				  LOGGER.info("bookInventoryResp : " + bookInventoryResp);
 				  transactionSuccess=true; 
 			  }catch(Exception e) { 
@@ -176,10 +205,9 @@ public class IssueServiceImpl implements IssueService {
 		
 		if(transactionSuccess) {
 			 try { 
-				 notifyUser("Book returned: *" +
-						 returnBook.getBookISBN() + "* on *" + new Date() +
-						  " by *" + returnBook.getIssuedTo() + "*"); 
-				 
+				 notifyUser(returnBook.getIssuedToEmailId(),"Book returned: BookID: '" +
+						 returnBook.getBookId() + "' on '" + new Date() +
+						  "' by '" + returnBook.getIssuedToEmailId() + "'"); 
 			 }catch(Exception e){
 				  LOGGER.info("Exception occured while calling Notification Service " + e);
 				  } 
@@ -193,10 +221,10 @@ public class IssueServiceImpl implements IssueService {
 			return "Transaction failed";
 	}
 
-	private void notifyUser(String message) {
+	private void notifyUser(String notificationTo, String message) {
 		LOGGER.info("notifying user...");
 		try {
-			MQUtility.sendMessageAsync(message);
+			MQUtility.sendMessageAsync(notificationTo + "#" + message);
 		} catch (Exception e) {
 			LOGGER.error("Error occured while sending message to Queue" + e);
 		}
