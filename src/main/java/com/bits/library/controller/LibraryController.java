@@ -48,6 +48,17 @@ public class LibraryController {
 				new Gson().toJson(issueService.fetchIssueBookDetails(issueId)),
 				HttpStatus.OK);		
 	}
+
+	/*
+	 * http://localhost:8080/library/issueBooks
+	 */
+	@GetMapping("/api/library/v1/issueBooks")
+	public ResponseEntity<String> fetchAllIssueBookDetails() {
+		LOGGER.info("fetchAllIssueBookDetails");
+		return new ResponseEntity<String>(
+				new Gson().toJson(issueService.fetchAllIssueBookDetails()),
+				HttpStatus.OK);		
+	}
 	
 	/*
 	 * http://localhost:8080/library/searchIssuedBook?studentId=10

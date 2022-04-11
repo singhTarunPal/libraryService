@@ -11,4 +11,5 @@ public interface IssueService {
 	IssuedBookDetailsDTO fetchIssueBookDetails(Integer issueId);
 	List<IssuedBookDetailsDTO> searchIssuedBookWithStudentId(String studentId);
 	String returnBook(ReturnBookDTO issueBook);	
+	List<IssuedBookDetailsDTO> fetchAllIssueBookDetails();
 }

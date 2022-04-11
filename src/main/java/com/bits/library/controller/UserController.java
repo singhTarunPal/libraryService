@@ -33,4 +33,10 @@ public class UserController {
         System.out.println(user);
         return user;
     }
+
+	@GetMapping("/api/test")
+	public String showTest() {
+		System.out.println("TEst API ");		
+		return "Success";
+    }
 }

@@ -1,12 +1,15 @@
 package com.bits.library.dao.ws.impl;
 
 import java.lang.reflect.Type;
+import java.time.Duration;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,8 +33,8 @@ public class BookServiceStubImpl implements BookServiceStub {
 			LOGGER.info("getBookById: " + bookId);
 			String getURL = Strings.concat(uri, bookId);
 
-			LOGGER.info("getURL: " + getURL);
-			RestTemplate restTemplate = new RestTemplate();
+			LOGGER.info("BookServiceStub:getURL: " + getURL);
+			RestTemplate restTemplate = getCustomRestTemplate(new RestTemplateBuilder());
 			String resultJSONArray = restTemplate.getForObject(getURL, String.class);
 
 			LOGGER.info("Book WS-result: " + resultJSONArray);
@@ -39,9 +42,17 @@ public class BookServiceStubImpl implements BookServiceStub {
 
 			return new Gson().fromJson(resultJSONArray, listType);
 		} catch (Exception e) {
+			e.printStackTrace();
 			LOGGER.info("Book WS-failed");
 			return null;
 		}
 	}
 
+	private RestTemplate getCustomRestTemplate(RestTemplateBuilder restTemplateBuilder) {
+				
+		 return restTemplateBuilder
+		            .setConnectTimeout(Duration.ofSeconds(10))
+		            .setReadTimeout(Duration.ofSeconds(10))
+		            .build();
+	}
 }

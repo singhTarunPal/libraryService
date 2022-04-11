@@ -128,6 +128,35 @@ public class IssueServiceImpl implements IssueService {
 		LOGGER.info("issueBookDTO: " + issueBookDTO);
 		return issueBookDTO;
 	}
+	
+	@Override
+	public List<IssuedBookDetailsDTO> fetchAllIssueBookDetails() {
+
+		LOGGER.info("fetchAllIssueBookDetails in Service ");
+		List<IssuedBookDetailsDTO> issueBookDTOList = new ArrayList<IssuedBookDetailsDTO>();
+		List<BookIssueDetails> bookIssueDetailsList = (List<BookIssueDetails>) bookIssueRepository.findAll();
+		
+		LOGGER.info("bookIssueDetailsList: " + bookIssueDetailsList);
+		bookIssueDetailsList.stream().forEach(bookIssueDetailsOptional -> {
+			//get the book author and title
+			String bookAuthor = "Not-Available";
+			String bookTitle = "Not-Available";
+			List<Book> books = bookServiceStub.getBookById(bookIssueDetailsOptional.getBookId());
+			if(books !=null && books.size()>0) {
+				bookAuthor=books.get(0).getAuthor();
+				bookTitle=books.get(0).getTitle();
+			}
+			
+			issueBookDTOList.add(new IssuedBookDetailsDTO(bookIssueDetailsOptional.getId(),
+					bookIssueDetailsOptional.getBookId(), bookIssueDetailsOptional.getIssuedTo(),
+					bookIssueDetailsOptional.getIssuedOn(), bookIssueDetailsOptional.getIssuedForDays(),
+					bookIssueDetailsOptional.getReturnedFlag(), bookIssueDetailsOptional.getReturnedOn(),
+					bookAuthor, bookTitle));
+		});
+		return issueBookDTOList;
+	}
+
+
 
 	@Override
 	public List<IssuedBookDetailsDTO> searchIssuedBookWithStudentId(String studentId) {

@@ -1,12 +1,14 @@
 package com.bits.library.dao.ws.impl;
 
 import java.lang.reflect.Type;
+import java.time.Duration;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -31,7 +33,9 @@ public class InventoryServiceStubImpl implements InventoryServiceStub {
 	public List<BookInventory> getInventoryForABook(String bookId) {
 		try {
 			String getURL = Strings.concat(uri, bookId);
-			RestTemplate restTemplate = new RestTemplate();
+			
+			LOGGER.info("InventoryServiceStub:getURL: " + getURL);
+			RestTemplate restTemplate = getCustomRestTemplate(new RestTemplateBuilder());
 			String resultJSONArray = restTemplate.getForObject(getURL, String.class);
 
 			LOGGER.info("Inventory WS-result: " + resultJSONArray);
@@ -39,7 +43,9 @@ public class InventoryServiceStubImpl implements InventoryServiceStub {
 
 			return new Gson().fromJson(resultJSONArray, listType);
 		} catch (Exception e) {
+			LOGGER.error("Inventory WS-failed", e);
 			LOGGER.info("Inventory WS-failed");
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -51,7 +57,7 @@ public class InventoryServiceStubImpl implements InventoryServiceStub {
 
 			HttpEntity<String> request = new HttpEntity<String>(new Gson().toJson(bookInventory), headers);
 
-			RestTemplate restTemplate = new RestTemplate();
+			RestTemplate restTemplate = getCustomRestTemplate(new RestTemplateBuilder());
 
 			ResponseEntity<String> response = restTemplate.postForEntity(uri, request, String.class);
 
@@ -60,8 +66,18 @@ public class InventoryServiceStubImpl implements InventoryServiceStub {
 
 			return new Gson().fromJson(response.getBody(), BookInventory.class);
 		} catch (Exception e) {
+			LOGGER.error("Inventory WS-failed", e);
 			LOGGER.info("Inventory WS-failed");
+			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	private RestTemplate getCustomRestTemplate(RestTemplateBuilder restTemplateBuilder) {
+		
+		 return restTemplateBuilder
+		            .setConnectTimeout(Duration.ofSeconds(10))
+		            .setReadTimeout(Duration.ofSeconds(10))
+		            .build();
 	}
 }
