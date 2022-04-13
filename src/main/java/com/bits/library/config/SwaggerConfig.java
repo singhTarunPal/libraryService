@@ -1,12 +1,12 @@
 package com.bits.library.config;
 
-import static springfox.documentation.builders.PathSelectors.regex;
-
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
@@ -22,7 +22,8 @@ public class SwaggerConfig {
 	public Docket newsApi() {
 		return new Docket(DocumentationType.SWAGGER_2).groupName("v1")
 				.apiInfo(apiInfo()).select()
-				.paths(regex("/library/.*")).build();
+				.apis(RequestHandlerSelectors.basePackage("com.bits.library.controller"))
+				.paths(PathSelectors.any()).build();
 	}
 
 	private ApiInfo apiInfo() {

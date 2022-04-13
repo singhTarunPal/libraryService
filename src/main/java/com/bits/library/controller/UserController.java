@@ -2,6 +2,8 @@ package com.bits.library.controller;
 
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,28 +17,24 @@ import com.bits.library.repository.UserRepository;
 @CrossOrigin()
 public class UserController {
 	
+	private static final Logger LOGGER = LogManager.getLogger(LibraryController.class);
+	
 	@Autowired
 	UserRepository userRepo;
 	
 	@GetMapping("/api/users")
 	public List<LibraryUser> showAllUsers() {
-		System.out.println("Getting users ");
-		userRepo.findAll().forEach(item -> System.out.println(item));
-		System.out.println("Got user ");
+		LOGGER.info("Getting users ");
+		userRepo.findAll().forEach(item -> LOGGER.info(item));
+		LOGGER.info("Got user ");
 		return userRepo.findAll();
     }
     
 	@GetMapping("/api/user")
     public LibraryUser getUserByemail(@RequestParam String email) {
-        System.out.println("Getting user by email: " + email);
+		LOGGER.info("Getting user by email: " + email);
         LibraryUser user = userRepo.findUserByEmail(email);
-        System.out.println(user);
+        LOGGER.info(user);
         return user;
-    }
-
-	@GetMapping("/api/test")
-	public String showTest() {
-		System.out.println("TEst API ");		
-		return "Success";
-    }
+    }	
 }
