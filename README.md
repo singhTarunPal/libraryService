@@ -23,7 +23,7 @@ Its a Spring Boot webservice based on Java
        - {   "username": "2020MT93553@wilp.bits-pilani.ac.in",   "password": "123456"}
        
  - GET
-    - http://localhost:8081/api/library/v1/searchIssuedBook?studentEmailId=<studentEmailId >  
+    - http://localhost:8081/api/library/v1/searchIssuedBook?studentId=<studentEmailId >  
        - Get the Books issued to a student by passing student Email Id
 - GET
      - http://localhost:8081/api/library/v1/issueBook?issueId=< issueId >  
